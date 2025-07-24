@@ -1,0 +1,14 @@
+[package]
+name = "lunais"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[profile.release]
+strip = true
+lto = true
+
+[dependencies]
+chrono = "0.4.41"
+chrono-tz = "0.10.4"
+clap = { version = "4.5.41", features = ["derive"] }

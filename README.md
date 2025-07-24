@@ -1,0 +1,8 @@
+A software that produce a ical for timezone conflict
+
+# Naming
+
+The software is named after the main protagonist of Timespinner, since she
+travel in time, and depending on the ending, wreck some timeline havoc.
+
+This is also a rewrite of a existing python application, but in Rust.
