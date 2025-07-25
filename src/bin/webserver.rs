@@ -2,30 +2,18 @@ use askama::Template;
 use axum::Router;
 use axum::extract::Path;
 use axum::http::StatusCode;
+use axum::http::header;
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use chrono_tz::Tz;
+use lunais::disruption_calendar::generate_ical;
 use lunais::index_page::IndexTemplate;
+use lunais::timezone_pair::parse_tz;
 use std::env;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 
-// TODO set a different port
 const PORT: u16 = 2507;
-
-/*
- * fn parse_tz(paths: Vec<&str>) -> Option<Vec<Tz>> {
-    let res = Vec::new();
-    if  paths.len() < 2 {
-        return None;
-    }
-    if  paths.len() > 4 {
-        return None;
-    }
-
-    Some(res)
-} */
 
 pub async fn index_handler() -> impl IntoResponse {
     let template = IndexTemplate::new();
@@ -38,16 +26,18 @@ pub async fn index_handler() -> impl IntoResponse {
 
 pub async fn ical_handler(Path(path): Path<String>) -> impl IntoResponse {
     let elements: Vec<&str> = path.split('/').collect();
+    // TODO
+    let year = 2025;
     println!("{:?}", elements);
-    match elements.len() {
-        2 => {
-            let tz: Result<Tz, _> = elements[0].parse();
-            println!("{:?}", tz);
-            "ok 2"
-        }
-        3 => "ok 3",
-        4 => "ok 4",
-        _ => "not ok",
+    if let Some(tzp) = parse_tz(elements) {
+        let d = tzp.get_disruption_dates(year);
+        let i = generate_ical(&d);
+        let mut headers = header::HeaderMap::new();
+        headers.insert(header::CONTENT_TYPE, "text/calendar".parse().unwrap());
+
+        (headers, i.to_string()).into_response()
+    } else {
+        (StatusCode::NOT_FOUND, "Not found").into_response()
     }
 }
 

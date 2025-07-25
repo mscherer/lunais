@@ -26,3 +26,5 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
     }
     i.done()
 }
+
+// TODO add tests
