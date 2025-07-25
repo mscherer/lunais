@@ -9,6 +9,15 @@ strip = true
 lto = true
 
 [dependencies]
-chrono = "0.4.41"
-chrono-tz = "0.10.4"
-clap = { version = "4.5.41", features = ["derive"] }
+chrono = { version = "*" }
+chrono-tz = { version = "*" }
+clap = { version = "*", features = ["derive"] }
+icalendar = { version = "*" }
+axum = { version = "*", default-features = false, features = ["http1", "tokio"] }
+tokio = { version = "*", default-features = false, features = ["macros", "rt", "net"] }
+askama = { version = "*", default-features = false, features = ["derive", "alloc"] }
+tracing = { version = "*", default-features = false }
+tracing-subscriber = { version = "*", default-features = false, features = ["fmt"] }
+tower-http = { version = "*", default-features = false, features = ["trace"] }
+axum-response-cache = { version = "*", default-features = false, features= ["axum08"] }
+

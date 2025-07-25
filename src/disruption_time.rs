@@ -1,7 +1,7 @@
-use chrono::naive::NaiveDate;
 use chrono::Datelike;
 use chrono::TimeZone;
 use chrono::Timelike;
+use chrono::naive::NaiveDate;
 use chrono_tz::Tz;
 use std::time::Duration;
 
@@ -11,7 +11,8 @@ pub enum DisruptionDate {
     DSTPermanentChange(NaiveDate),
 }
 
-#[derive(Debug)]
+/*
+ * #[derive(Debug)]
 pub struct DSTChaosPeriod {
     start: NaiveDate,
     end: NaiveDate,
@@ -19,7 +20,7 @@ pub struct DSTChaosPeriod {
 
 #[derive(Debug)]
 pub struct DSTPermanentChange(NaiveDate);
-
+*/
 // faire une boucle sur la date avec 2 TZ
 // calculer l'offset le 1er janvier
 // faire un vec de DisruptionDate
@@ -40,7 +41,7 @@ pub fn get_disruption_dates(year: i32, tz_1: &Tz, tz_2: &Tz) -> Vec<DisruptionDa
         .single()
         .unwrap();
     // assume that DST is 1h
-    // wrapping sub because it otherwise complain at run tim in debug
+    // use wrapping_sub to avoid panic at runtime in debug
     let new_year_offset = dt_1.hour().wrapping_sub(dt_2.hour());
     let mut change_date: Option<NaiveDate> = None;
     // use hour, because offset is making borrow checker unhappy
@@ -67,3 +68,6 @@ pub fn get_disruption_dates(year: i32, tz_1: &Tz, tz_2: &Tz) -> Vec<DisruptionDa
 
 // convert to ical
 //
+// TODO add tests using a year in the past with know
+//
+//  [DSTChaosPeriod(2025-03-09, 2025-03-30), DSTChaosPeriod(2025-10-26, 2025-11-02)]
