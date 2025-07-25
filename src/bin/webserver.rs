@@ -10,7 +10,7 @@ use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 
 // TODO set a different port
-const PORT: u16 = 1107;
+const PORT: u16 = 2507;
 
 pub async fn index_handler() -> impl IntoResponse {
     let template = IndexTemplate::new();
