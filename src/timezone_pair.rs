@@ -29,7 +29,7 @@ pub fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
             tz2 = format!("{}/{}", paths[1], paths[2]).parse().ok();
         } else {
             tz1 = format!("{}/{}", paths[0], paths[1]).parse().ok();
-            tz2 = paths[3].parse().ok();
+            tz2 = paths[2].parse().ok();
         }
     } else if paths.len() == 4 {
         tz1 = format!("{}/{}", paths[0], paths[1]).parse().ok();
@@ -118,7 +118,12 @@ mod test {
         let r = parse_tz("UTC/Europe/Berlin".split('/').collect());
         assert_ne!(r, None);
 
+        let r = parse_tz("America/New_York/UTC".split('/').collect());
+        assert_ne!(r, None);
+
         let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect());
         assert_ne!(r, None);
     }
+
+    fn test_disruption_date() {}
 }
