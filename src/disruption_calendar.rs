@@ -1,4 +1,4 @@
-use crate::disruption_time::DisruptionDate;
+use crate::timezone_pair::DisruptionDate;
 use icalendar;
 use icalendar::Component;
 use icalendar::Event;
