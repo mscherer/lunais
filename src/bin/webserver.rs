@@ -6,6 +6,8 @@ use axum::http::header;
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
+use chrono::Datelike;
+use chrono::Local;
 use lunais::disruption_calendar::generate_ical;
 use lunais::index_page::IndexTemplate;
 use lunais::timezone_pair::parse_tz;
@@ -26,15 +28,19 @@ pub async fn index_handler() -> impl IntoResponse {
 
 pub async fn ical_handler(Path(path): Path<String>) -> impl IntoResponse {
     let elements: Vec<&str> = path.split('/').collect();
-    // TODO
-    let year = 2025;
-    println!("{:?}", elements);
+
+    let year = Local::now().naive_utc().date().year();
+
     if let Some(tzp) = parse_tz(elements) {
-        let d = tzp.get_disruption_dates(year);
-        let i = generate_ical(&d);
+        let mut d = Vec::new();
+        for y in year - 1..year + 3 {
+            d.append(&mut tzp.get_disruption_dates(y))
+        }
+
         let mut headers = header::HeaderMap::new();
         headers.insert(header::CONTENT_TYPE, "text/calendar".parse().unwrap());
 
+        let i = generate_ical(&d);
         (headers, i.to_string()).into_response()
     } else {
         (StatusCode::NOT_FOUND, "Not found").into_response()
