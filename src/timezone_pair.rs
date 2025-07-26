@@ -50,7 +50,7 @@ impl TimezonePair {
         Self { tzs: [tz1, tz2] }
     }
 
-    pub fn get_disruption_dates(self: &Self, year: i32) -> Vec<DisruptionDate> {
+    pub fn get_disruption_dates(&self, year: i32) -> Vec<DisruptionDate> {
         let mut res = Vec::new();
         let mut dt_1 = self.tzs[0]
             .with_ymd_and_hms(year, 1, 1, 12, 0, 0)
