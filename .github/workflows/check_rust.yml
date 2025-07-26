@@ -1,0 +1,46 @@
+on: [push, pull_request]
+
+name: Compile and lint
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        rust_version: [stable, nightly]
+        platform: ['24.04', '24.04-arm']
+    name: Build rust project
+    runs-on: ubuntu-${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ${{ matrix.rust_version }}
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+            toolchain: ${{ matrix.rust_version }}
+            override: true
+            components: rustfmt, clippy
+
+      # TODO refactor ?
+      - name: Run cargo build
+        uses: clechasseur/rs-cargo@v3
+        with:
+          command: build
+          args: --release
+
+      - name: Run cargo build
+        uses: clechasseur/rs-cargo@v3
+        with:
+          command: test
+
+      - name: Run cargo fmt
+        uses: clechasseur/rs-cargo@v3
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo clippy
+        uses: clechasseur/rs-cargo@v3
+        with:
+          command: clippy
+          args: -- -D warnings
+
