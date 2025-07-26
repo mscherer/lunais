@@ -17,27 +17,27 @@ pub struct TimezonePair {
 }
 
 pub fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
-    let mut prefix = "";
+    let mut prefix = None;
     let mut res = Vec::new();
 
     for item in paths {
-        if prefix.is_empty() {
+        if prefix.is_none() {
             match item.parse() {
                 Ok(tz) => res.push(tz),
-                Err(_) => prefix = item,
+                Err(_) => prefix = Some(item),
             }
         } else {
-            match format!("{prefix}/{item}").parse() {
+            match format!("{}/{}", prefix.unwrap(), item).parse() {
                 Ok(tz) => {
                     res.push(tz);
-                    prefix = "";
+                    prefix = None;
                 }
                 Err(_) => break,
             }
         }
     }
 
-    if res.len() == 2 && prefix.is_empty() {
+    if res.len() == 2 && prefix.is_none() {
         Some(TimezonePair::new(res[0], res[1]))
     } else {
         None
@@ -108,6 +108,15 @@ mod test {
         assert_eq!(r, None);
 
         let r = parse_tz("UTC/GMT/America/Paris/coin".split('/').collect());
+        assert_eq!(r, None);
+
+        let r = parse_tz("Asia/////Tokyo/Europe/Berlin".split('/').collect());
+        assert_eq!(r, None);
+
+        let r = parse_tz("Asia/Tokyo/Europe/Berlin///".split('/').collect());
+        assert_eq!(r, None);
+
+        let r = parse_tz("//Asia/Tokyo/Europe/Berlin".split('/').collect());
         assert_eq!(r, None);
 
         // ok
