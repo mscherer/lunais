@@ -17,29 +17,28 @@ pub struct TimezonePair {
 }
 
 pub fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
-    let mut tz1: Option<Tz> = None;
-    let mut tz2: Option<Tz> = None;
+    let mut prefix = "";
+    let mut res = Vec::new();
 
-    if paths.len() == 2 {
-        tz1 = paths[0].parse().ok();
-        tz2 = paths[1].parse().ok();
-    } else if paths.len() == 3 {
-        tz1 = paths[0].parse().ok();
-        if tz1.is_some() {
-            tz2 = format!("{}/{}", paths[1], paths[2]).parse().ok();
+    for item in paths {
+        if prefix.is_empty() {
+            match item.parse() {
+                Ok(tz) => res.push(tz),
+                Err(_) => prefix = item,
+            }
         } else {
-            tz1 = format!("{}/{}", paths[0], paths[1]).parse().ok();
-            tz2 = paths[2].parse().ok();
+            match format!("{prefix}/{item}").parse() {
+                Ok(tz) => {
+                    res.push(tz);
+                    prefix = "";
+                }
+                Err(_) => break,
+            }
         }
-    } else if paths.len() == 4 {
-        tz1 = format!("{}/{}", paths[0], paths[1]).parse().ok();
-        tz2 = format!("{}/{}", paths[2], paths[3]).parse().ok();
     }
 
-    if let Some(t1) = tz1
-        && let Some(t2) = tz2
-    {
-        Some(TimezonePair::new(t1, t2))
+    if res.len() == 2 && prefix.is_empty() {
+        Some(TimezonePair::new(res[0], res[1]))
     } else {
         None
     }
