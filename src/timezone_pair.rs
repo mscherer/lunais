@@ -92,32 +92,23 @@ mod test {
     use crate::timezone_pair::parse_tz;
     use chrono::NaiveDate;
     use chrono_tz::Tz;
+
     #[test]
     fn test_parse_tz() {
         // fail
-        let r = parse_tz("UTC".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("UTC/gmt".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("UTC/GMT/plop".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("UTC/GMT/America/Paris".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("UTC/GMT/America/Paris/coin".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("Asia/////Tokyo/Europe/Berlin".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("Asia/Tokyo/Europe/Berlin///".split('/').collect());
-        assert_eq!(r, None);
-
-        let r = parse_tz("//Asia/Tokyo/Europe/Berlin".split('/').collect());
-        assert_eq!(r, None);
+        for testcase in [
+            "UTC",
+            "UTC/gmt",
+            "UTC/GMT/plop",
+            "UTC/GMT/America/Paris",
+            "UTC/GMT/America/Paris/coin",
+            "Asia/////Tokyo/Europe/Berlin",
+            "Asia/Tokyo/Europe/Berlin///",
+            "//Asia/Tokyo/Europe/Berlin",
+        ] {
+            let r = parse_tz(testcase.split('/').collect());
+            assert_eq!(r, None);
+        }
 
         // ok
         let utc_tz: Tz = "UTC".parse().expect("is hardcoded");
