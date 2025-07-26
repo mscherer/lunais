@@ -20,6 +20,12 @@ pub fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
     let mut prefix = None;
     let mut res = Vec::new();
 
+    // make sure we do not do a loop if the result is obviously
+    // wrong (small protection against DoS)
+    if paths.len() > 4 {
+        return None
+    }
+
     for item in paths {
         if prefix.is_none() {
             match item.parse() {
