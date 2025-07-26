@@ -5,7 +5,7 @@ use chrono::naive::NaiveDate;
 use chrono_tz::Tz;
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum DisruptionDate {
     DSTChaosPeriod(NaiveDate, NaiveDate),
     DSTPermanentChange(NaiveDate),
@@ -89,11 +89,12 @@ impl TimezonePair {
 
 #[cfg(test)]
 mod test {
-
+    use crate::timezone_pair::DisruptionDate;
+    use crate::timezone_pair::parse_tz;
+    use chrono::NaiveDate;
+    use chrono_tz::Tz;
     #[test]
     fn test_parse_tz() {
-        use crate::timezone_pair::parse_tz;
-
         // fail
         let r = parse_tz("UTC".split('/').collect());
         assert_eq!(r, None);
@@ -111,19 +112,44 @@ mod test {
         assert_eq!(r, None);
 
         // ok
-        // TODO better test (like check the results)
-        let r = parse_tz("UTC/GMT".split('/').collect());
-        assert_ne!(r, None);
+        let utc_tz: Tz = "UTC".parse().expect("is hardcoded");
+        let gmt_tz: Tz = "GMT".parse().expect("is hardcoded");
+        let berlin_tz: Tz = "Europe/Berlin".parse().expect("is hardcoded");
+        let newyork_tz: Tz = "America/New_York".parse().expect("is hardcoded");
+        let vancouver_tz: Tz = "America/Vancouver".parse().expect("is hardcoded");
 
-        let r = parse_tz("UTC/Europe/Berlin".split('/').collect());
-        assert_ne!(r, None);
+        let r = parse_tz("UTC/GMT".split('/').collect()).unwrap();
+        assert_eq!(r.tzs[0], utc_tz);
+        assert_eq!(r.tzs[1], gmt_tz);
 
-        let r = parse_tz("America/New_York/UTC".split('/').collect());
-        assert_ne!(r, None);
+        let r = parse_tz("UTC/Europe/Berlin".split('/').collect()).unwrap();
+        assert_eq!(r.tzs[0], utc_tz);
+        assert_eq!(r.tzs[1], berlin_tz);
 
-        let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect());
-        assert_ne!(r, None);
+        let r = parse_tz("America/New_York/UTC".split('/').collect()).unwrap();
+        assert_eq!(r.tzs[0], newyork_tz);
+        assert_eq!(r.tzs[1], utc_tz);
+
+        let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect()).unwrap();
+        assert_eq!(r.tzs[0], vancouver_tz);
+        assert_eq!(r.tzs[1], berlin_tz);
     }
 
-    fn test_disruption_date() {}
+    #[test]
+    fn test_disruption_date() {
+        let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect()).unwrap();
+        let dd = r.get_disruption_dates(2024);
+
+        let mut expected_res = Vec::new();
+        expected_res.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2024, 3, 10).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2024, 3, 31).expect("hardcoded"),
+        ));
+        expected_res.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2024, 11, 3).expect("hardcoded"),
+        ));
+
+        assert_eq!(dd, expected_res);
+    }
 }
