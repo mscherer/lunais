@@ -665,6 +665,7 @@ dependencies = [
  "chrono-tz",
  "clap",
  "icalendar",
+ "serde_json",
  "tokio",
  "tower-http",
  "tracing",

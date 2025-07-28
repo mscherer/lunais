@@ -21,4 +21,5 @@ tracing = { version = "*", default-features = false }
 tracing-subscriber = { version = "*", default-features = false, features = ["fmt"] }
 tower-http = { version = "*", default-features = false, features = ["trace"] }
 axum-response-cache = { version = "*", default-features = false, features= ["axum08"] }
+serde_json = { version = "*", default-features = false, features = ["alloc", "std"] }
 

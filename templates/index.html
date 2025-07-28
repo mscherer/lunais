@@ -3,7 +3,38 @@
 <title>Lunais - tool to indicate DST-related scheduling chaos</title>
 </header>
 <body>
+<datalist id="tzs"></datalist>
+<script>
+const tzs = {{ tz_json|safe }};
+tzs.forEach(addOption);
 
-<footer><a href="{{ env!("CARGO_PKG_REPOSITORY") }}">Source code</a> - Compilation date: {{ buildtime }} - Git revision: {{ git_rev }}</footer>
+function addOption(value) {
+  datalist = document.getElementById("tzs");
+  option = document.createElement("option");
+  option.value = value;
+  datalist.appendChild(option);
+}
+
+function updateLink() {
+  let tz_1 = document.getElementById("tz_1").value;
+  let tz_2 = document.getElementById("tz_2").value;
+
+  a = document.getElementById("link");
+  a.href = a.innerHTML = "/calendars/" + tz_1 + "/" + tz_2;
+  if (tzs.includes(tz_1) && tzs.includes(tz_2)) {
+    a.style.display = "initial"
+  } else {
+    a.style.display = "none"
+  }
+}
+</script>
+
+
+<p><label>Choose the 1st time zone:<label></p>
+<p><input list="tzs" id="tz_1" oninput="updateLink()" /></p>
+<p><label>Choose the 2nd time zone:<label></p>
+<p><input list="tzs" id="tz_2" oninput="updateLink()" /></p>
+<p>Link: <a href="" id="link"></a></p>
+<footer><a href="{{ env!("CARGO_PKG_REPOSITORY") }}">Source code</a> - Compilation date: {{ BUILDTIME }} - Git revision: {{ git_rev }}</footer>
 </body>
 </html>
