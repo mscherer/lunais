@@ -17,33 +17,28 @@ pub struct TimezonePair {
 }
 
 pub fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
-    let mut prefix = None;
+    let mut prefix = String::from("");
     let mut res = Vec::new();
 
     // make sure we do not do a loop if the result is obviously
     // wrong (small protection against DoS)
-    if paths.len() > 4 {
-        return None
+    // 6 is the maximum for 2 TZs
+    if paths.len() > 6 {
+        return None;
     }
 
     for item in paths {
-        if prefix.is_none() {
-            match item.parse() {
-                Ok(tz) => res.push(tz),
-                Err(_) => prefix = Some(item),
+        prefix.push_str(item);
+        match prefix.parse() {
+            Ok(tz) => {
+                res.push(tz);
+                prefix.clear();
             }
-        } else {
-            match format!("{}/{}", prefix.unwrap(), item).parse() {
-                Ok(tz) => {
-                    res.push(tz);
-                    prefix = None;
-                }
-                Err(_) => break,
-            }
+            Err(_) => prefix.push('/'),
         }
     }
 
-    if res.len() == 2 && prefix.is_none() {
+    if res.len() == 2 && prefix.is_empty() {
         Some(TimezonePair::new(res[0], res[1]))
     } else {
         None
@@ -122,6 +117,12 @@ mod test {
         let berlin_tz: Tz = "Europe/Berlin".parse().expect("is hardcoded");
         let newyork_tz: Tz = "America/New_York".parse().expect("is hardcoded");
         let vancouver_tz: Tz = "America/Vancouver".parse().expect("is hardcoded");
+        let indianapolis_tz: Tz = "America/Indiana/Indianapolis"
+            .parse()
+            .expect("is hardcoded");
+        let buenos_aires_tz: Tz = "America/Argentina/Buenos_Aires"
+            .parse()
+            .expect("is hardcoded");
 
         let r = parse_tz("UTC/GMT".split('/').collect()).unwrap();
         assert_eq!(r.tzs[0], utc_tz);
@@ -138,6 +139,24 @@ mod test {
         let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect()).unwrap();
         assert_eq!(r.tzs[0], vancouver_tz);
         assert_eq!(r.tzs[1], berlin_tz);
+
+        let r = parse_tz(
+            "America/Vancouver/America/Indiana/Indianapolis"
+                .split('/')
+                .collect(),
+        )
+        .unwrap();
+        assert_eq!(r.tzs[0], vancouver_tz);
+        assert_eq!(r.tzs[1], indianapolis_tz);
+
+        let r = parse_tz(
+            "America/Argentina/Buenos_Aires/America/Indiana/Indianapolis"
+                .split('/')
+                .collect(),
+        )
+        .unwrap();
+        assert_eq!(r.tzs[0], buenos_aires_tz);
+        assert_eq!(r.tzs[1], indianapolis_tz);
     }
 
     #[test]
