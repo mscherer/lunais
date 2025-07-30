@@ -47,10 +47,6 @@ pub async fn ical_handler(Path(path): Path<String>) -> impl IntoResponse {
     }
 }
 
-pub async fn health_checker_handler() -> impl IntoResponse {
-    "All is fine"
-}
-
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
     tracing_subscriber::fmt()
@@ -73,8 +69,9 @@ async fn main() {
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
                 .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
         )
+        // after the tracing, to not pollute log, see
         // https://github.com/tokio-rs/axum/discussions/355
-        .route("/healthz", get(health_checker_handler));
+        .route("/healthz", get(|| async { StatusCode::OK }));
 
     tracing::info!("Server started on port {port}");
 
