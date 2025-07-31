@@ -18,7 +18,7 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
                 )),
             DisruptionDate::DSTPermanentChange(c) => i.push(Event::new()
                 .all_day(*c)
-                .summary("Permament TZ change")
+                .summary("Permanent TZ change")
                 .description(
                     "The TZ is permanently changing in DST/not DST time (or there is a bug)",
                 )),
@@ -64,7 +64,7 @@ mod test {
                 .expect("hardcoded event")
                 .get_summary()
                 .unwrap(),
-            "Permament TZ change"
+            "Permanent TZ change"
         );
     }
 }
