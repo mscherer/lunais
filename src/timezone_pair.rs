@@ -60,7 +60,8 @@ impl TimezonePair {
             .with_ymd_and_hms(year, 1, 1, 12, 0, 0)
             .single()
             .unwrap();
-        // assume that DST is 1h
+        // assume that DST is at least 1h, even if this not always true:
+        // https://lists.iana.org/hyperkitty/list/tz@iana.org/thread/LK7QY5M7Q2IWXOICIVYXCBXJF2NKX66B/
         // use wrapping_sub to avoid panic at runtime in debug
         let new_year_offset = dt_1.hour().wrapping_sub(dt_2.hour());
         let mut change_date: Option<NaiveDate> = None;
