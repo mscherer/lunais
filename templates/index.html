@@ -1,7 +1,7 @@
 <html>
-<header>
+<head>
 <title>Lunais - tool to indicate DST-related scheduling chaos</title>
-</header>
+</head>
 <body>
 <datalist id="tzs"></datalist>
 <script>
@@ -30,9 +30,9 @@ function updateLink() {
 </script>
 
 
-<p><label>Choose the 1st time zone:<label></p>
+<p><label for="tz_1">Choose the 1st time zone:<label></p>
 <p><input list="tzs" id="tz_1" oninput="updateLink()" /></p>
-<p><label>Choose the 2nd time zone:<label></p>
+<p><label for="tz_2">Choose the 2nd time zone:<label></p>
 <p><input list="tzs" id="tz_2" oninput="updateLink()" /></p>
 <p>Link: <a href="" id="link"></a></p>
 <footer><a href="{{ env!("CARGO_PKG_REPOSITORY") }}">Source code</a> - Compilation date: {{ BUILDTIME }} - Git revision: {{ git_rev }}</footer>
