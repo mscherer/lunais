@@ -27,4 +27,44 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
     i.done()
 }
 
-// TODO add tests
+#[cfg(test)]
+mod test {
+    use crate::disruption_calendar::generate_ical;
+    use crate::timezone_pair::DisruptionDate;
+    use chrono::naive::NaiveDate;
+    use icalendar::Component;
+
+    #[test]
+    fn test_generate_ical() {
+        let mut dates = Vec::new();
+        dates.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2024, 3, 10).expect("hardcoded 10th of March"),
+            NaiveDate::from_ymd_opt(2024, 3, 31).expect("hardcoded 31th of March"),
+        ));
+        dates.push(DisruptionDate::DSTPermanentChange(
+            NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded date in october"),
+        ));
+        let cal = generate_ical(&dates);
+        assert_eq!(cal.components.len(), 2);
+        assert_eq!(
+            cal.components
+                .get(0)
+                .expect("hardcoded 1st element")
+                .as_event()
+                .expect("hardcoded event")
+                .get_summary()
+                .unwrap(),
+            "Meeting chaos period"
+        );
+        assert_eq!(
+            cal.components
+                .get(1)
+                .expect("hardcoded 2nd element")
+                .as_event()
+                .expect("hardcoded event")
+                .get_summary()
+                .unwrap(),
+            "Permament TZ change"
+        );
+    }
+}
