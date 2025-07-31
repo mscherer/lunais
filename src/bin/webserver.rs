@@ -2,7 +2,7 @@ use askama::Template;
 use axum::Router;
 use axum::extract::Path;
 use axum::http::StatusCode;
-use axum::http::header;
+use axum::http::{header, HeaderValue};
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
@@ -16,6 +16,7 @@ use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 
 const PORT: u16 = 2507;
+const TEXT_CALENDAR: HeaderValue = HeaderValue::from_static("text/calendar");
 
 pub async fn index_handler() -> impl IntoResponse {
     let template = IndexTemplate::new();
@@ -38,7 +39,7 @@ pub async fn ical_handler(Path(path): Path<String>) -> impl IntoResponse {
         }
 
         let mut headers = header::HeaderMap::new();
-        headers.insert(header::CONTENT_TYPE, "text/calendar".parse().unwrap());
+        headers.insert(header::CONTENT_TYPE, TEXT_CALENDAR);
 
         let i = generate_ical(&d);
         (headers, i.to_string()).into_response()
