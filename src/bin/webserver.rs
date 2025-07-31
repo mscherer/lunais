@@ -2,10 +2,11 @@ use askama::Template;
 use axum::Router;
 use axum::extract::Path;
 use axum::http::StatusCode;
-use axum::http::{header, HeaderValue};
+use axum::http::{HeaderValue, header};
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
+use axum_response_cache::CacheLayer;
 use chrono::Datelike;
 use chrono::Local;
 use lunais::disruption_calendar::generate_ical;
@@ -64,7 +65,10 @@ async fn main() {
     };
     let app = Router::new()
         .route("/", get(index_handler))
-        .route("/calendars/{*tzs}", get(ical_handler))
+        .route(
+            "/calendars/{*tzs}",
+            get(ical_handler).layer(CacheLayer::with_lifespan(24 * 60 * 60)),
+        )
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
