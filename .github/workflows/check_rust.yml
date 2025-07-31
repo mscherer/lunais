@@ -20,27 +20,25 @@ jobs:
             override: true
             components: rustfmt, clippy
 
-      # TODO refactor ?
-      - name: Run cargo build
+      - name: Check if the code build
         uses: clechasseur/rs-cargo@v3
         with:
           command: build
           args: --release
 
-      - name: Run cargo build
+      - name: Check if the tests are ok
         uses: clechasseur/rs-cargo@v3
         with:
           command: test
 
-      - name: Run cargo fmt
+      - name: Check the formatting
         uses: clechasseur/rs-cargo@v3
         with:
           command: fmt
           args: --all -- --check
 
-      - name: Run cargo clippy
+      - name: Check with clippy
         uses: clechasseur/rs-cargo@v3
         with:
           command: clippy
           args: -- -D warnings
-
