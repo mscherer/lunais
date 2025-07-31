@@ -196,4 +196,40 @@ mod test {
 
         assert_eq!(dd, expected_res);
     }
+
+    #[test]
+    fn test_dst_2_hours_europe() {
+        // Troll, a station in the antartica use a 2h DST
+        // it change at the same time as Paris, at least in 2024, but
+        // it change with 2h where Paris do 1h
+        let r = parse_tz("Antarctica/Troll/Europe/Paris".split('/').collect()).unwrap();
+        let dd = r.get_disruption_dates(2024);
+
+        let mut expected_res = Vec::new();
+        expected_res.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2024, 3, 31).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded"),
+        ));
+
+        assert_eq!(dd, expected_res);
+    }
+
+    #[test]
+    fn test_dst_2_hours_usa() {
+        // Troll, a station in the antartica use a 2h DST
+        // it change at the same time as Paris, at least in 2024,
+        // and so at a different time than in NY
+        // that's just one big period of disruption, while it could be 3, depending
+        // on how we see things
+        let r = parse_tz("Antarctica/Troll/America/New_York".split('/').collect()).unwrap();
+        let dd = r.get_disruption_dates(2024);
+
+        let mut expected_res = Vec::new();
+        expected_res.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2024, 3, 10).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2024, 11, 3).expect("hardcoded"),
+        ));
+
+        assert_eq!(dd, expected_res);
+    }
 }
