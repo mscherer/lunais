@@ -63,13 +63,15 @@ impl TimezonePair {
         // assume that DST is at least 1h, even if this not always true:
         // https://lists.iana.org/hyperkitty/list/tz@iana.org/thread/LK7QY5M7Q2IWXOICIVYXCBXJF2NKX66B/
         // use wrapping_sub to avoid panic at runtime in debug
-        let new_year_offset = dt_1.hour().wrapping_sub(dt_2.hour());
+        let new_year_offset =
+            (dt_1.hour() * 60 + dt_1.minute()).wrapping_sub(dt_2.hour() * 60 + dt_2.minute());
         let mut change_date: Option<NaiveDate> = None;
         // use hour, because offset is making borrow checker unhappy
         while dt_1.date_naive().year() < year + 1 {
             dt_1 += Duration::from_secs(60 * 60 * 24);
             dt_2 += Duration::from_secs(60 * 60 * 24);
-            let offset = dt_1.hour().wrapping_sub(dt_2.hour());
+            let offset =
+                (dt_1.hour() * 60 + dt_1.minute()).wrapping_sub(dt_2.hour() * 60 + dt_2.minute());
 
             if offset != new_year_offset {
                 if change_date.is_none() {
@@ -173,6 +175,23 @@ mod test {
         expected_res.push(DisruptionDate::DSTChaosPeriod(
             NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded"),
             NaiveDate::from_ymd_opt(2024, 11, 3).expect("hardcoded"),
+        ));
+
+        assert_eq!(dd, expected_res);
+    }
+
+    #[test]
+    fn test_dst_half_hour() {
+        // Norfolk and Lord How change at the same time
+        // but Lord Howe do only 30 minutes
+        // in 2024, that's on 2024-04-07 and 2024-10-06
+        let r = parse_tz("Australia/Lord_Howe/Pacific/Norfolk".split('/').collect()).unwrap();
+        let dd = r.get_disruption_dates(2024);
+
+        let mut expected_res = Vec::new();
+        expected_res.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2024, 4, 7).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2024, 10, 6).expect("hardcoded"),
         ));
 
         assert_eq!(dd, expected_res);
