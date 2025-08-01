@@ -153,44 +153,36 @@ mod test {
             .parse()
             .expect("is hardcoded");
 
-        let r = parse_tz("UTC/GMT".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("UTC/GMT").unwrap();
         assert_eq!(r.tzs[0], utc_tz);
         assert_eq!(r.tzs[1], gmt_tz);
 
-        let r = parse_tz("UTC/Europe/Berlin".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("UTC/Europe/Berlin").unwrap();
         assert_eq!(r.tzs[0], utc_tz);
         assert_eq!(r.tzs[1], berlin_tz);
 
-        let r = parse_tz("America/New_York/UTC".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("America/New_York/UTC").unwrap();
         assert_eq!(r.tzs[0], newyork_tz);
         assert_eq!(r.tzs[1], utc_tz);
 
-        let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("America/Vancouver/Europe/Berlin").unwrap();
         assert_eq!(r.tzs[0], vancouver_tz);
         assert_eq!(r.tzs[1], berlin_tz);
 
-        let r = parse_tz(
-            "America/Vancouver/America/Indiana/Indianapolis"
-                .split('/')
-                .collect(),
-        )
-        .unwrap();
+        let r = TimezonePair::try_from("America/Vancouver/America/Indiana/Indianapolis").unwrap();
         assert_eq!(r.tzs[0], vancouver_tz);
         assert_eq!(r.tzs[1], indianapolis_tz);
 
-        let r = parse_tz(
-            "America/Argentina/Buenos_Aires/America/Indiana/Indianapolis"
-                .split('/')
-                .collect(),
-        )
-        .unwrap();
+        let r =
+            TimezonePair::try_from("America/Argentina/Buenos_Aires/America/Indiana/Indianapolis")
+                .unwrap();
         assert_eq!(r.tzs[0], buenos_aires_tz);
         assert_eq!(r.tzs[1], indianapolis_tz);
     }
 
     #[test]
     fn test_disruption_date() {
-        let r = parse_tz("America/Vancouver/Europe/Berlin".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("America/Vancouver/Europe/Berlin").unwrap();
         let dd = r.get_disruption_dates(2024);
 
         let mut expected_res = Vec::new();
@@ -211,7 +203,7 @@ mod test {
         // Norfolk and Lord How change at the same time
         // but Lord Howe do only 30 minutes
         // in 2024, that's on 2024-04-07 and 2024-10-06
-        let r = parse_tz("Australia/Lord_Howe/Pacific/Norfolk".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("Australia/Lord_Howe/Pacific/Norfolk").unwrap();
         let dd = r.get_disruption_dates(2024);
 
         let mut expected_res = Vec::new();
@@ -228,7 +220,7 @@ mod test {
         // Troll, a station in the antartica use a 2h DST
         // it change at the same time as Paris, at least in 2024, but
         // it change with 2h where Paris do 1h
-        let r = parse_tz("Antarctica/Troll/Europe/Paris".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("Antarctica/Troll/Europe/Paris").unwrap();
         let dd = r.get_disruption_dates(2024);
 
         let mut expected_res = Vec::new();
@@ -247,7 +239,7 @@ mod test {
         // and so at a different time than in NY
         // that's just one big period of disruption, while it could be 3, depending
         // on how we see things
-        let r = parse_tz("Antarctica/Troll/America/New_York".split('/').collect()).unwrap();
+        let r = TimezonePair::try_from("Antarctica/Troll/America/New_York").unwrap();
         let dd = r.get_disruption_dates(2024);
 
         let mut expected_res = Vec::new();
