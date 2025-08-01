@@ -58,10 +58,7 @@ impl TimezonePair {
             .with_ymd_and_hms(year, 1, 1, 12, 0, 0)
             .single()
             .unwrap();
-        let mut dt_2 = self.tzs[1]
-            .with_ymd_and_hms(year, 1, 1, 12, 0, 0)
-            .single()
-            .unwrap();
+        let mut dt_2 = dt_1.with_timezone(&self.tzs[1]);
         // assume that DST is at least 1h, even if this not always true:
         // https://lists.iana.org/hyperkitty/list/tz@iana.org/thread/LK7QY5M7Q2IWXOICIVYXCBXJF2NKX66B/
         // use wrapping_sub to avoid panic at runtime in debug
@@ -265,5 +262,32 @@ mod test {
         ));
 
         assert_eq!(dd, expected_res);
+    }
+
+    #[test]
+    fn test_utc_plus_14() {
+        // Since Kiritimati is always UTC+14, and Atka is UTC+10 with DST, the DST change do not
+        // happen on the same calendar day
+        let r1 = TimezonePair::try_from("Pacific/Kiritimati/America/Atka").unwrap();
+        let r2 = TimezonePair::try_from("America/Atka/Pacific/Kiritimati").unwrap();
+
+        let i = 2025;
+        assert_ne!(r1.get_disruption_dates(i), r2.get_disruption_dates(i));
+    }
+
+    #[test]
+    fn test_tz_order() {
+        // It also fail with Vancouver and Tokyo because there is more than 12 hours
+        // between them
+        let r1 = TimezonePair::try_from("America/Vancouver/Asia/Tokyo").unwrap();
+        let r2 = TimezonePair::try_from("Asia/Tokyo/America/Vancouver").unwrap();
+
+        let i = 2025;
+        assert_ne!(r1.get_disruption_dates(i), r2.get_disruption_dates(i));
+
+        // same day for Berlin and Vancouver
+        let r1 = TimezonePair::try_from("America/Vancouver/Europe/Berlin").unwrap();
+        let r2 = TimezonePair::try_from("Europe/Berlin/America/Vancouver").unwrap();
+        assert_eq!(r1.get_disruption_dates(i), r2.get_disruption_dates(i));
     }
 }
