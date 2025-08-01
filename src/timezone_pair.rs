@@ -90,12 +90,36 @@ impl TimezonePair {
     }
 }
 
+impl TryFrom<String> for TimezonePair {
+    type Error = &'static str;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        TimezonePair::try_from(value.as_ref())
+    }
+}
+
+impl TryFrom<&str> for TimezonePair {
+    type Error = &'static str;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        parse_tz(value.split('/').collect()).ok_or("Invalid string")
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::timezone_pair::DisruptionDate;
+    use crate::timezone_pair::TimezonePair;
     use crate::timezone_pair::parse_tz;
     use chrono::NaiveDate;
     use chrono_tz::Tz;
+
+    #[test]
+    fn test_try_from() {
+        let r = TimezonePair::try_from("UTC/UTC");
+        assert_eq!(r.is_ok(), true);
+
+        let r = TimezonePair::try_from("UTC/UTC".to_owned());
+        assert_eq!(r.is_ok(), true);
+    }
 
     #[test]
     fn test_parse_tz() {
