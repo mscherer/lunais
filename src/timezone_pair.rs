@@ -18,7 +18,7 @@ pub struct TimezonePair {
     tzs: [Tz; 2],
 }
 
-pub fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
+fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
     let mut prefix = String::from("");
     let mut res = Vec::new();
 
