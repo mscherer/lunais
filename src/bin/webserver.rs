@@ -11,7 +11,7 @@ use chrono::Datelike;
 use chrono::Local;
 use lunais::disruption_calendar::generate_ical;
 use lunais::index_page::IndexTemplate;
-use lunais::timezone_pair::parse_tz;
+use lunais::timezone_pair::TimezonePair;
 use std::env;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
@@ -29,11 +29,9 @@ pub async fn index_handler() -> impl IntoResponse {
 }
 
 pub async fn ical_handler(Path(path): Path<String>) -> impl IntoResponse {
-    let elements: Vec<&str> = path.split('/').collect();
-
     let year = Local::now().naive_utc().date().year();
 
-    if let Some(tzp) = parse_tz(elements) {
+    if let Ok(tzp) = TimezonePair::try_from(path) {
         let mut d = Vec::new();
         for y in year - 1..year + 3 {
             d.append(&mut tzp.get_disruption_dates(y))
