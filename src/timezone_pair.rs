@@ -250,4 +250,20 @@ mod test {
 
         assert_eq!(dd, expected_res);
     }
+
+    #[test]
+    fn test_tz_half_hour_offset() {
+        // India is on UTC+5h30 all year long, Pakistan is UTC+5
+        // none observe DST as of 2024, but Pakistan tested it until 2009
+        let r = TimezonePair::try_from("Asia/Calcutta/Asia/Karachi").unwrap();
+        let dd = r.get_disruption_dates(2008);
+
+        let mut expected_res = Vec::new();
+        expected_res.push(DisruptionDate::DSTChaosPeriod(
+            NaiveDate::from_ymd_opt(2008, 6, 1).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2008, 11, 1).expect("hardcoded"),
+        ));
+
+        assert_eq!(dd, expected_res);
+    }
 }
