@@ -3,6 +3,7 @@ use chrono::TimeZone;
 use chrono::Timelike;
 use chrono::naive::NaiveDate;
 use chrono_tz::Tz;
+use serde::Deserialize;
 use std::time::Duration;
 
 #[derive(Debug, PartialEq)]
@@ -11,7 +12,8 @@ pub enum DisruptionDate {
     DSTPermanentChange(NaiveDate),
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Deserialize)]
+#[serde(try_from = "String")]
 pub struct TimezonePair {
     tzs: [Tz; 2],
 }
