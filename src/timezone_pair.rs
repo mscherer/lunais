@@ -55,7 +55,10 @@ impl TimezonePair {
     pub fn get_disruption_dates(&self, year: i32) -> Vec<DisruptionDate> {
         let mut res = Vec::new();
         let mut dt_1 = self.tzs[0]
-            .with_ymd_and_hms(year, 1, 1, 12, 0, 0)
+            // use 3h00 to avoid side effect of midnight and day change
+            // and 3h is usually the time where a change have been enacted
+            // (unless exceptions, looking at you Australia/Lord_howe)
+            .with_ymd_and_hms(year, 1, 1, 3, 0, 0)
             .single()
             .unwrap();
         let mut dt_2 = dt_1.with_timezone(&self.tzs[1]);
@@ -180,16 +183,16 @@ mod test {
     #[test]
     fn test_disruption_date() {
         let r = TimezonePair::try_from("America/Vancouver/Europe/Berlin").unwrap();
-        let dd = r.get_disruption_dates(2024);
+        let dd = r.get_disruption_dates(2025);
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2024, 3, 10).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2024, 3, 31).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 3, 9).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 3, 30).expect("hardcoded"),
         ));
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2024, 11, 3).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 10, 26).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 11, 2).expect("hardcoded"),
         ));
 
         assert_eq!(dd, expected_res);
@@ -199,14 +202,14 @@ mod test {
     fn test_dst_half_hour() {
         // Norfolk and Lord How change at the same time
         // but Lord Howe do only 30 minutes
-        // in 2024, that's on 2024-04-07 and 2024-10-06
+        // in 2025, that's on 2025-04-06 and 2025-10-05
         let r = TimezonePair::try_from("Australia/Lord_Howe/Pacific/Norfolk").unwrap();
-        let dd = r.get_disruption_dates(2024);
+        let dd = r.get_disruption_dates(2025);
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2024, 4, 7).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2024, 10, 6).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 4, 6).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 10, 5).expect("hardcoded"),
         ));
 
         assert_eq!(dd, expected_res);
@@ -215,15 +218,15 @@ mod test {
     #[test]
     fn test_dst_2_hours_europe() {
         // Troll, a station in the antartica use a 2h DST
-        // it change at the same time as Paris, at least in 2024, but
+        // it change at the same time as Paris, at least in 2025, but
         // it change with 2h where Paris do 1h
         let r = TimezonePair::try_from("Antarctica/Troll/Europe/Paris").unwrap();
-        let dd = r.get_disruption_dates(2024);
+        let dd = r.get_disruption_dates(2025);
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2024, 3, 31).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 3, 30).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 10, 26).expect("hardcoded"),
         ));
 
         assert_eq!(dd, expected_res);
@@ -232,17 +235,17 @@ mod test {
     #[test]
     fn test_dst_2_hours_usa() {
         // Troll, a station in the antartica use a 2h DST
-        // it change at the same time as Paris, at least in 2024,
-        // and so at a different time than in NY
+        // it change at the same time as Paris, at least in 2025,
+        // and so at a different time than in NY, who change earlier in 2025
         // that's just one big period of disruption, while it could be 3, depending
         // on how we see things
         let r = TimezonePair::try_from("Antarctica/Troll/America/New_York").unwrap();
-        let dd = r.get_disruption_dates(2024);
+        let dd = r.get_disruption_dates(2025);
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2024, 3, 10).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2024, 11, 3).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 3, 10).expect("hardcoded"),
+            NaiveDate::from_ymd_opt(2025, 11, 3).expect("hardcoded"),
         ));
 
         assert_eq!(dd, expected_res);
@@ -251,7 +254,7 @@ mod test {
     #[test]
     fn test_tz_half_hour_offset() {
         // India is on UTC+5h30 all year long, Pakistan is UTC+5
-        // none observe DST as of 2024, but Pakistan tested it until 2009
+        // none observe DST as of 2025, but Pakistan tested it until 2009
         let r = TimezonePair::try_from("Asia/Calcutta/Asia/Karachi").unwrap();
         let dd = r.get_disruption_dates(2008);
 
@@ -276,18 +279,34 @@ mod test {
     }
 
     #[test]
-    fn test_tz_order() {
-        // It also fail with Vancouver and Tokyo because there is more than 12 hours
+    fn test_tz_order_big_diff() {
+        // It also go on a different day for Vancouver and Tokyo because there is more than 12 hours
         // between them
         let r1 = TimezonePair::try_from("America/Vancouver/Asia/Tokyo").unwrap();
         let r2 = TimezonePair::try_from("Asia/Tokyo/America/Vancouver").unwrap();
 
         let i = 2025;
         assert_ne!(r1.get_disruption_dates(i), r2.get_disruption_dates(i));
+    }
 
-        // same day for Berlin and Vancouver
-        let r1 = TimezonePair::try_from("America/Vancouver/Europe/Berlin").unwrap();
-        let r2 = TimezonePair::try_from("Europe/Berlin/America/Vancouver").unwrap();
+    #[test]
+    fn test_tz_order_medium_diff() {
+        // technically, the time change on Saturday afternoon from NY since it change on
+        // Dublin night, so not the same day depending on the 1st argument
+        let r1 = TimezonePair::try_from("America/New_York/Europe/Dublin").unwrap();
+        let r2 = TimezonePair::try_from("Europe/Dublin/America/New_York").unwrap();
+
+        let i = 2025;
+        assert_ne!(r1.get_disruption_dates(i), r2.get_disruption_dates(i));
+    }
+
+    #[test]
+    fn test_tz_order_small_diff() {
+        // small diff should be ok (Cairo and Kyiv are on the same timezone, not same DST)
+        let r1 = TimezonePair::try_from("Africa/Cairo/Europe/Kyiv").unwrap();
+        let r2 = TimezonePair::try_from("Europe/Kyiv/Africa/Cairo").unwrap();
+
+        let i = 2025;
         assert_eq!(r1.get_disruption_dates(i), r2.get_disruption_dates(i));
     }
 }
