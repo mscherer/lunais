@@ -21,6 +21,6 @@ fn main() {
         let i = generate_ical(&d);
         println!("{i}");
     } else {
-        println!("Incorrect tz: {}", cli.timezone_1);
+        println!("Incorrect tzs: {} {}", cli.timezone_1, cli.timezone_2);
     };
 }
