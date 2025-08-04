@@ -1,14 +1,11 @@
 use askama::Template;
 use axum::Router;
 use axum::extract::Path;
-use axum::http::StatusCode;
-use axum::http::{HeaderValue, header};
-use axum::response::Html;
-use axum::response::IntoResponse;
+use axum::http::{HeaderValue, StatusCode, header};
+use axum::response::{Html, IntoResponse};
 use axum::routing::get;
 use axum_response_cache::CacheLayer;
-use chrono::Datelike;
-use chrono::Local;
+use chrono::{Datelike, Local};
 use lunais::disruption_calendar::generate_ical;
 use lunais::index_page::IndexTemplate;
 use lunais::timezone_pair::TimezonePair;
