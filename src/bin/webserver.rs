@@ -10,6 +10,7 @@ use lunais::disruption_calendar::generate_ical;
 use lunais::index_page::IndexTemplate;
 use lunais::timezone_pair::TimezonePair;
 use std::env;
+use std::time::Duration;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 
@@ -58,7 +59,7 @@ async fn main() {
         .route("/", get(index_handler))
         .route(
             "/calendars/{*tzs}",
-            get(ical_handler).layer(CacheLayer::with_lifespan(24 * 60 * 60)),
+            get(ical_handler).layer(CacheLayer::with_lifespan(Duration::from_secs(24 * 60 * 60))),
         )
         .layer(
             TraceLayer::new_for_http()
