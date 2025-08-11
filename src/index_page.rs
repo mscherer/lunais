@@ -18,7 +18,8 @@ impl IndexTemplate {
                 .unwrap();
 
         Self {
-            git_rev: env::var("OPENSHIFT_BUILD_COMMIT").unwrap_or(String::from(GIT_REV))[0..6]
+            git_rev: env::var("OPENSHIFT_BUILD_COMMIT")
+                .unwrap_or(format!("{:.6}", String::from(GIT_REV)))
                 .to_string(),
             tz_json,
         }
