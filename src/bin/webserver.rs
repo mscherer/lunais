@@ -19,10 +19,12 @@ const TEXT_CALENDAR: HeaderValue = HeaderValue::from_static("text/calendar");
 
 pub async fn index_handler() -> impl IntoResponse {
     let template = IndexTemplate::new();
-    if let Ok(body) = template.render() {
-        (StatusCode::OK, Html(body)).into_response()
-    } else {
-        (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong").into_response()
+    match template.render() {
+        Ok(body) => (StatusCode::OK, Html(body)).into_response(),
+        Err(error) => {
+            tracing::error!("Error when rendering: {error}");
+            (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong").into_response()
+        }
     }
 }
 
