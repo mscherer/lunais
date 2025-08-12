@@ -25,7 +25,7 @@ jobs:
 
           export IMAGE=$GITHUB_REPOSITORY
 
-          docker build . --tag $REGISTRY/$IMAGE:$DATE --tag $REGISTRY/$IMAGE:latest
+          docker build . --env GIT_REV=$GITHUB_SHA --tag $REGISTRY/$IMAGE:$DATE --tag $REGISTRY/$IMAGE:latest
           docker push $REGISTRY/$IMAGE:latest
           docker push $REGISTRY/$IMAGE:$DATE
         env:
