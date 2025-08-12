@@ -5,6 +5,8 @@ on:
     branches:
       - main
   pull_request:
+  schedule:
+    - cron: '40 3 * * *'
 
 jobs:
   build:
@@ -25,7 +27,7 @@ jobs:
           export DATE=$(date +%Y%m%d)
           export IMAGE=$GITHUB_REPOSITORY
           podman build . --env GIT_REV=$GITHUB_SHA --tag $REGISTRY/$IMAGE:$DATE --tag $REGISTRY/$IMAGE:latest
-          if [ ${GITHUB_REF} == 'refs/heads/main' -a ${GITHUB_EVENT_NAME} == 'push' ]; then
+          if [[ ${GITHUB_REF} == 'refs/heads/main' &&  ${GITHUB_EVENT_NAME} == 'push' ]] || [[ ${GITHUB_EVENT_NAME} == 'schedule' ]]; then
             echo $PASSWORD | podman login $REGISTRY -u $GITHUB_REPOSITORY_OWNER --password-stdin
             podman push $REGISTRY/$IMAGE:latest
             podman push $REGISTRY/$IMAGE:$DATE
