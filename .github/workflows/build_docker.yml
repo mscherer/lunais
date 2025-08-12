@@ -28,7 +28,7 @@ jobs:
           REGISTRY: ghcr.io
 
       - name: Push the image
-        if: ${{ (env.GITHUB_EVENT_NAME == 'push' && env.GITHUB_REF == 'refs/heads/main') }}
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           echo $PASSWORD | podman login $REGISTRY -u $GITHUB_REPOSITORY_OWNER --password-stdin
           podman push $REGISTRY/$IMAGE:latest
