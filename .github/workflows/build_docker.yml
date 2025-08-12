@@ -30,6 +30,7 @@ jobs:
       - name: Push the image
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
+          export IMAGE=$GITHUB_REPOSITORY
           echo $PASSWORD | podman login $REGISTRY -u $GITHUB_REPOSITORY_OWNER --password-stdin
           podman push $REGISTRY/$IMAGE:latest
           podman push $REGISTRY/$IMAGE:$DATE
