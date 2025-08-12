@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   build:
@@ -21,12 +22,15 @@ jobs:
         run: |
           apt install podman -y
           export DATE=$(date +%Y%m%d)
-
-          echo $PASSWORD | podman login $REGISTRY -u $GITHUB_REPOSITORY_OWNER --password-stdin
-
           export IMAGE=$GITHUB_REPOSITORY
-
           podman build . --env GIT_REV=$GITHUB_SHA --tag $REGISTRY/$IMAGE:$DATE --tag $REGISTRY/$IMAGE:latest
+        env:
+          REGISTRY: ghcr.io
+
+      - name: Push the image
+        if: ${{ (env.GITHUB_EVENT_NAME == 'push' && env.GITHUB_REF == 'main') }}
+        run: |
+          echo $PASSWORD | podman login $REGISTRY -u $GITHUB_REPOSITORY_OWNER --password-stdin
           podman push $REGISTRY/$IMAGE:latest
           podman push $REGISTRY/$IMAGE:$DATE
         env:
