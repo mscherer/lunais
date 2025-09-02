@@ -21,24 +21,24 @@ jobs:
             components: rustfmt, clippy
 
       - name: Check if the code build
-        uses: clechasseur/rs-cargo@v3
+        uses: clechasseur/rs-cargo@v4
         with:
           command: build
           args: --release
 
       - name: Check if the tests are ok
-        uses: clechasseur/rs-cargo@v3
+        uses: clechasseur/rs-cargo@v4
         with:
           command: test
 
       - name: Check the formatting
-        uses: clechasseur/rs-cargo@v3
+        uses: clechasseur/rs-cargo@v4
         with:
           command: fmt
           args: --all -- --check
 
       - name: Check with clippy
-        uses: clechasseur/rs-cargo@v3
+        uses: clechasseur/rs-cargo@v4
         with:
           command: clippy
           args: -- -D warnings
