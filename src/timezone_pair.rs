@@ -4,9 +4,10 @@ use chrono::Timelike;
 use chrono::naive::NaiveDate;
 use chrono_tz::Tz;
 use serde::Deserialize;
+use serde::Serialize;
 use std::time::Duration;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum DisruptionDate {
     DSTChaosPeriod(NaiveDate, NaiveDate),
     DSTPermanentChange(NaiveDate),

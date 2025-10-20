@@ -27,6 +27,10 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
     i.done()
 }
 
+pub fn generate_json(dates: &Vec<DisruptionDate>) -> String {
+    serde_json::to_string(dates).unwrap()
+}
+
 #[cfg(test)]
 mod test {
     use crate::disruption_calendar::generate_ical;
