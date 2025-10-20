@@ -10,7 +10,7 @@ strip = true
 lto = true
 
 [dependencies]
-chrono = { version = "*" }
+chrono = { version = "*", features= ["serde"] }
 chrono-tz = { version = "*" }
 clap = { version = "*", features = ["derive"] }
 icalendar = { version = "*" }
