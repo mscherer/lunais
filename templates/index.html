@@ -29,6 +29,9 @@ function updateLink() {
 }
 </script>
 
+<p>If you work in a group big enough to have people from all over the world, you might have to deal with DST related disruption every 6 months. Since some part of the world (mostly Europe) apply DST at a different time than others part of the world (mostly North America), you might suddenly see meetings moving around by themselves on calendars in March and October. For example, if you have a meeting at 17h in Paris created by someone in France, chances are high that it will move at the same time as France move from winter to summer time. But then, it could collide with a meeting created by someone in Boston at 10 am (so 16h for Paris), because for a short period of time, this 10 am meeting will start at 17h when the USA move to summer time at the start of March, while France would move only at the end of March.</p>
+
+<p>To anticipate that, you can get a .ics file from this website. You have to pick 2 timezones, and copy the generated link to your favorite calendar to know when disruption are expected.</p>
 
 <p><label for="tz_1">Choose the 1st time zone:<label></p>
 <p><input list="tzs" id="tz_1" oninput="updateLink()" /></p>
