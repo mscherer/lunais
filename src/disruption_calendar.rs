@@ -10,14 +10,14 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
     for d in dates {
         match d {
             DisruptionDate::DSTChaosPeriod(s, e) => i.push(Event::new()
-                .starts(*s)
-                .ends(*e)
+                .starts(convert_jiff_date_to_naive_date(*s))
+                .ends(convert_jiff_date_to_naive_date(*e))
                 .summary("Meeting chaos period")
                 .description(
                     "Beware, meeting conflicts may happen and move around, fasten your seat belt",
                 )),
             DisruptionDate::DSTPermanentChange(c) => i.push(Event::new()
-                .all_day(*c)
+                .all_day(convert_jiff_date_to_naive_date(*c))
                 .summary("Permanent TZ change")
                 .description(
                     "The TZ is permanently changing in DST/not DST time (or there is a bug)",
@@ -31,23 +31,28 @@ pub fn generate_json(dates: &Vec<DisruptionDate>) -> String {
     serde_json::to_string(dates).unwrap()
 }
 
+// TODO remove once icalendar support jiff
+pub fn convert_jiff_date_to_naive_date(date: jiff::civil::Date) -> chrono::NaiveDate {
+    date.to_string()
+        .parse()
+        .expect("should not fail because we have well formed date")
+}
+
 #[cfg(test)]
 mod test {
     use crate::disruption_calendar::generate_ical;
     use crate::timezone_pair::DisruptionDate;
-    use chrono::naive::NaiveDate;
     use icalendar::Component;
+    use jiff::civil::date;
 
     #[test]
     fn test_generate_ical() {
         let mut dates = Vec::new();
         dates.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2024, 3, 10).expect("hardcoded 10th of March"),
-            NaiveDate::from_ymd_opt(2024, 3, 31).expect("hardcoded 31th of March"),
+            date(2024, 3, 10),
+            date(2024, 3, 31),
         ));
-        dates.push(DisruptionDate::DSTPermanentChange(
-            NaiveDate::from_ymd_opt(2024, 10, 27).expect("hardcoded date in october"),
-        ));
+        dates.push(DisruptionDate::DSTPermanentChange(date(2024, 10, 27)));
         let cal = generate_ical(&dates);
         assert_eq!(cal.components.len(), 2);
         assert_eq!(
