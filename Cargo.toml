@@ -10,8 +10,8 @@ strip = true
 lto = true
 
 [dependencies]
-chrono = { version = "*", features= ["serde"] }
-chrono-tz = { version = "*" }
+# needed for the conversion and icalendar
+chrono = { version = "*" }
 clap = { version = "*", features = ["derive"] }
 icalendar = { version = "*" }
 axum = { version = "*", default-features = false, features = ["http1", "tokio"] }
@@ -23,4 +23,4 @@ tower-http = { version = "*", default-features = false, features = ["trace"] }
 axum-response-cache = { version = "*", default-features = false, features= ["axum08"] }
 serde_json = { version = "*", default-features = false, features = ["alloc", "std"] }
 serde = { version = "*", default-features = false, features = ["derive"] }
-jiff = { version = "*"}
+jiff = { version = "*", default-features = false, features = ["serde", "std", "tzdb-zoneinfo"] }

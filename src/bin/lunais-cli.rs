@@ -9,7 +9,7 @@ struct Cli {
     timezone_2: String,
 
     #[arg(short, long)]
-    year: Option<i32>,
+    year: Option<i16>,
 }
 
 fn main() {

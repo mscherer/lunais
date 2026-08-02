@@ -1,16 +1,13 @@
-use chrono::Datelike;
-use chrono::TimeZone;
-use chrono::Timelike;
-use chrono::naive::NaiveDate;
-use chrono_tz::Tz;
+use jiff::civil::{Date, date};
+use jiff::tz::TimeZone as Tz;
 use serde::Deserialize;
 use serde::Serialize;
 use std::time::Duration;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub enum DisruptionDate {
-    DSTChaosPeriod(NaiveDate, NaiveDate),
-    DSTPermanentChange(NaiveDate),
+    DSTChaosPeriod(Date, Date),
+    DSTPermanentChange(Date),
 }
 
 #[derive(PartialEq, Debug, Deserialize)]
@@ -32,7 +29,7 @@ fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
 
     for item in paths {
         prefix.push_str(item);
-        match prefix.parse() {
+        match Tz::get(&prefix) {
             Ok(tz) => {
                 res.push(tz);
                 prefix.clear();
@@ -42,7 +39,7 @@ fn parse_tz(paths: Vec<&str>) -> Option<TimezonePair> {
     }
 
     if res.len() == 2 && prefix.is_empty() {
-        Some(TimezonePair::new(res[0], res[1]))
+        Some(TimezonePair::new(res[0].clone(), res[1].clone()))
     } else {
         None
     }
@@ -53,24 +50,24 @@ impl TimezonePair {
         Self { tzs: [tz1, tz2] }
     }
 
-    pub fn get_disruption_dates(&self, year: i32) -> Vec<DisruptionDate> {
+    pub fn get_disruption_dates(&self, year: i16) -> Vec<DisruptionDate> {
         let mut res = Vec::new();
-        let mut dt_1 = self.tzs[0]
-            // use 3h00 to avoid side effect of midnight and day change
-            // and 3h is usually the time where a change have been enacted
-            // (unless exceptions, looking at you Australia/Lord_howe)
-            .with_ymd_and_hms(year, 1, 1, 3, 0, 0)
-            .single()
+        // use 3h00 to avoid side effect of midnight and day change
+        // and 3h is usually the time where a change have been enacted
+        // (unless exceptions, looking at you Australia/Lord_howe)
+        let mut dt_1 = date(year, 1, 1)
+            .at(3, 0, 0, 0)
+            .to_zoned(self.tzs[0].clone())
             .unwrap();
-        let mut dt_2 = dt_1.with_timezone(&self.tzs[1]);
+        let mut dt_2 = dt_1.with_time_zone(self.tzs[1].clone());
         // assume that DST is at least 1h, even if this not always true:
         // https://lists.iana.org/hyperkitty/list/tz@iana.org/thread/LK7QY5M7Q2IWXOICIVYXCBXJF2NKX66B/
         // use wrapping_sub to avoid panic at runtime in debug
         let new_year_offset =
             (dt_1.hour() * 60 + dt_1.minute()).wrapping_sub(dt_2.hour() * 60 + dt_2.minute());
-        let mut change_date: Option<NaiveDate> = None;
+        let mut change_date: Option<Date> = None;
         // use hour, because offset is making borrow checker unhappy
-        while dt_1.date_naive().year() < year + 1 {
+        while dt_1.year() < year + 1 {
             dt_1 += Duration::from_secs(60 * 60 * 24);
             dt_2 += Duration::from_secs(60 * 60 * 24);
             let offset =
@@ -78,10 +75,10 @@ impl TimezonePair {
 
             if offset != new_year_offset {
                 if change_date.is_none() {
-                    change_date = Some(dt_1.date_naive())
+                    change_date = Some(dt_1.date())
                 }
             } else if let Some(d) = change_date {
-                res.push(DisruptionDate::DSTChaosPeriod(d, dt_1.date_naive()));
+                res.push(DisruptionDate::DSTChaosPeriod(d, dt_1.date()));
                 change_date = None;
             }
         }
@@ -112,8 +109,8 @@ mod test {
     use crate::timezone_pair::DisruptionDate;
     use crate::timezone_pair::TimezonePair;
     use crate::timezone_pair::parse_tz;
-    use chrono::NaiveDate;
-    use chrono_tz::Tz;
+    use jiff::civil::date;
+    use jiff::tz::TimeZone as Tz;
 
     #[test]
     fn test_try_from() {
@@ -142,17 +139,13 @@ mod test {
         }
 
         // ok
-        let utc_tz: Tz = "UTC".parse().expect("is hardcoded");
-        let gmt_tz: Tz = "GMT".parse().expect("is hardcoded");
-        let berlin_tz: Tz = "Europe/Berlin".parse().expect("is hardcoded");
-        let newyork_tz: Tz = "America/New_York".parse().expect("is hardcoded");
-        let vancouver_tz: Tz = "America/Vancouver".parse().expect("is hardcoded");
-        let indianapolis_tz: Tz = "America/Indiana/Indianapolis"
-            .parse()
-            .expect("is hardcoded");
-        let buenos_aires_tz: Tz = "America/Argentina/Buenos_Aires"
-            .parse()
-            .expect("is hardcoded");
+        let utc_tz: Tz = Tz::get("UTC").expect("is hardcoded");
+        let gmt_tz: Tz = Tz::get("GMT").expect("is hardcoded");
+        let berlin_tz: Tz = Tz::get("Europe/Berlin").expect("is hardcoded");
+        let newyork_tz: Tz = Tz::get("America/New_York").expect("is hardcoded");
+        let vancouver_tz: Tz = Tz::get("America/Vancouver").expect("is hardcoded");
+        let indianapolis_tz: Tz = Tz::get("America/Indiana/Indianapolis").expect("is hardcoded");
+        let buenos_aires_tz: Tz = Tz::get("America/Argentina/Buenos_Aires").expect("is hardcoded");
 
         let r = TimezonePair::try_from("UTC/GMT").unwrap();
         assert_eq!(r.tzs[0], utc_tz);
@@ -188,12 +181,12 @@ mod test {
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2025, 3, 9).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2025, 3, 30).expect("hardcoded"),
+            date(2025, 3, 9),
+            date(2025, 3, 30),
         ));
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2025, 10, 26).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2025, 11, 2).expect("hardcoded"),
+            date(2025, 10, 26),
+            date(2025, 11, 2),
         ));
 
         assert_eq!(dd, expected_res);
@@ -209,8 +202,8 @@ mod test {
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2025, 4, 6).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2025, 10, 5).expect("hardcoded"),
+            date(2025, 4, 6),
+            date(2025, 10, 5),
         ));
 
         assert_eq!(dd, expected_res);
@@ -226,8 +219,8 @@ mod test {
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2025, 3, 30).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2025, 10, 26).expect("hardcoded"),
+            date(2025, 3, 30),
+            date(2025, 10, 26),
         ));
 
         assert_eq!(dd, expected_res);
@@ -245,8 +238,8 @@ mod test {
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2025, 3, 10).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2025, 11, 3).expect("hardcoded"),
+            date(2025, 3, 10),
+            date(2025, 11, 3),
         ));
 
         assert_eq!(dd, expected_res);
@@ -261,8 +254,8 @@ mod test {
 
         let mut expected_res = Vec::new();
         expected_res.push(DisruptionDate::DSTChaosPeriod(
-            NaiveDate::from_ymd_opt(2008, 6, 1).expect("hardcoded"),
-            NaiveDate::from_ymd_opt(2008, 11, 1).expect("hardcoded"),
+            date(2008, 6, 1),
+            date(2008, 11, 1),
         ));
 
         assert_eq!(dd, expected_res);
