@@ -1,6 +1,6 @@
 use crate::consts::{BUILDTIME, GIT_REV};
 use askama::Template;
-use chrono_tz::TZ_VARIANTS;
+use jiff::tz;
 use serde_json;
 use std::env;
 
@@ -13,9 +13,13 @@ pub struct IndexTemplate {
 
 impl IndexTemplate {
     pub fn new() -> Self {
-        let tz_json: String =
-            serde_json::to_string(&TZ_VARIANTS.iter().map(|t| t.name()).collect::<Vec<_>>())
-                .unwrap();
+        let tz_json: String = serde_json::to_string(
+            &tz::db()
+                .available()
+                .map(|t| String::from(t.as_str()))
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
 
         Self {
             git_rev: env::var("OPENSHIFT_BUILD_COMMIT")
