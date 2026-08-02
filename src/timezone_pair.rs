@@ -126,7 +126,8 @@ mod test {
         // fail
         for testcase in [
             "UTC",
-            "UTC/gmt",
+            // this test was removed because it work with jiff
+            //"UTC/gmt",
             "UTC/GMT/plop",
             "UTC/GMT/America/Paris",
             "UTC/GMT/America/Paris/coin",
