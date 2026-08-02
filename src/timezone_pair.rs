@@ -63,15 +63,15 @@ impl TimezonePair {
         // assume that DST is at least 1h, even if this not always true:
         // https://lists.iana.org/hyperkitty/list/tz@iana.org/thread/LK7QY5M7Q2IWXOICIVYXCBXJF2NKX66B/
         // use wrapping_sub to avoid panic at runtime in debug
-        let new_year_offset =
-            (dt_1.hour() * 60 + dt_1.minute()).wrapping_sub(dt_2.hour() * 60 + dt_2.minute());
+        let new_year_offset = (dt_1.hour() as i32 * 60 + dt_1.minute() as i32)
+            .wrapping_sub(dt_2.hour() as i32 * 60 + dt_2.minute() as i32);
         let mut change_date: Option<Date> = None;
         // use hour, because offset is making borrow checker unhappy
         while dt_1.year() < year + 1 {
             dt_1 += Duration::from_secs(60 * 60 * 24);
             dt_2 += Duration::from_secs(60 * 60 * 24);
-            let offset =
-                (dt_1.hour() * 60 + dt_1.minute()).wrapping_sub(dt_2.hour() * 60 + dt_2.minute());
+            let offset = (dt_1.hour() as i32 * 60 + dt_1.minute() as i32)
+                .wrapping_sub(dt_2.hour() as i32 * 60 + dt_2.minute() as i32);
 
             if offset != new_year_offset {
                 if change_date.is_none() {
