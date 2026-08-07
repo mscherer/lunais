@@ -32,6 +32,7 @@ pub fn generate_json(dates: &Vec<DisruptionDate>) -> String {
 }
 
 // TODO remove once icalendar support jiff
+// see https://github.com/hoodie/icalendar/issues/120
 pub fn convert_jiff_date_to_naive_date(date: jiff::civil::Date) -> chrono::NaiveDate {
     date.to_string()
         .parse()
