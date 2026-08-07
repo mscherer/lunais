@@ -35,7 +35,7 @@ pub async fn ical_handler(Path(tzp): Path<TimezonePair>) -> impl IntoResponse {
 
     let mut d = Vec::new();
     for y in year - 1..year + 3 {
-        d.append(&mut tzp.get_disruption_dates(y))
+        d.extend(tzp.get_disruption_dates(y))
     }
 
     let mut headers = header::HeaderMap::new();
@@ -50,7 +50,7 @@ pub async fn json_handler(Path(tzp): Path<TimezonePair>) -> impl IntoResponse {
 
     let mut d = Vec::new();
     for y in year - 1..year + 3 {
-        d.append(&mut tzp.get_disruption_dates(y))
+        d.extend(tzp.get_disruption_dates(y))
     }
 
     let mut headers = header::HeaderMap::new();
