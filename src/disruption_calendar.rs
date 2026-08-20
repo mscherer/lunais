@@ -3,6 +3,9 @@ use icalendar;
 use icalendar::Component;
 use icalendar::Event;
 use icalendar::EventLike;
+// TODO remove once icalendar support jiff
+// see https://github.com/hoodie/icalendar/issues/120
+use jiff_chrono_conversions::ToChrono;
 
 pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
     let mut i = icalendar::Calendar::new();
@@ -10,14 +13,14 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
     for d in dates {
         match d {
             DisruptionDate::DSTChaosPeriod(s, e) => i.push(Event::new()
-                .starts(convert_jiff_date_to_naive_date(*s))
-                .ends(convert_jiff_date_to_naive_date(*e))
+                .starts((*s).to_chrono())
+                .ends((*e).to_chrono())
                 .summary("Meeting chaos period")
                 .description(
                     "Beware, meeting conflicts may happen and move around, fasten your seat belt",
                 )),
             DisruptionDate::DSTPermanentChange(c) => i.push(Event::new()
-                .all_day(convert_jiff_date_to_naive_date(*c))
+                .all_day((*c).to_chrono())
                 .summary("Permanent TZ change")
                 .description(
                     "The TZ is permanently changing in DST/not DST time (or there is a bug)",
@@ -29,14 +32,6 @@ pub fn generate_ical(dates: &Vec<DisruptionDate>) -> icalendar::Calendar {
 
 pub fn generate_json(dates: &Vec<DisruptionDate>) -> String {
     serde_json::to_string(dates).unwrap()
-}
-
-// TODO remove once icalendar support jiff
-// see https://github.com/hoodie/icalendar/issues/120
-pub fn convert_jiff_date_to_naive_date(date: jiff::civil::Date) -> chrono::NaiveDate {
-    date.to_string()
-        .parse()
-        .expect("should not fail because we have well formed date")
 }
 
 #[cfg(test)]

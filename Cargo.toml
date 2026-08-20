@@ -24,3 +24,4 @@ axum-response-cache = { version = "*", default-features = false, features= ["axu
 serde_json = { version = "*", default-features = false, features = ["alloc", "std"] }
 serde = { version = "*", default-features = false, features = ["derive"] }
 jiff = { version = "*", default-features = false, features = ["serde", "std", "tzdb-zoneinfo"] }
+jiff-chrono-conversions = { version = "*", default-features = false, features = ["chrono-04", "jiff-02"] }
