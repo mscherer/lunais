@@ -1,6 +1,8 @@
 on: [push, pull_request]
 
 name: Compile and lint
+permissions:
+  contents: read
 
 jobs:
   check:
