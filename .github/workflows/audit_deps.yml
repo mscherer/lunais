@@ -1,6 +1,7 @@
 name: Security audit
 permissions:
   issues: write
+  checks: write
 on:
   workflow_dispatch:
   schedule:
