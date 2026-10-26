@@ -104,6 +104,14 @@ impl TryFrom<&str> for TimezonePair {
     }
 }
 
+impl core::str::FromStr for TimezonePair {
+    type Err = &'static str;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        parse_tz(value.split('/').collect()).ok_or("Invalid string")
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::timezone_pair::DisruptionDate;
