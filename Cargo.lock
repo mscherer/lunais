@@ -602,9 +602,9 @@ dependencies = [
 
 [[package]]
 name = "jiff-chrono-conversions"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13b31acd6581fc84411ed7442f57a0442015bcaa97fdfccf7da0753ed9b0ba59"
+checksum = "00cbea23f0508f2a044c319b8f6e43363d83b07fa983df4a3c5d900d1cd7569b"
 dependencies = [
  "chrono",
  "jiff",
