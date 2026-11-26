@@ -5,7 +5,7 @@ use axum::http::{HeaderValue, StatusCode, header};
 use axum::response::{Html, IntoResponse};
 use axum::routing::get;
 use axum_response_cache::CacheLayer;
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use lunais::disruption_calendar::generate_ical;
 use lunais::disruption_calendar::generate_json;
 use lunais::index_page::IndexTemplate;
@@ -31,7 +31,7 @@ pub async fn index_handler() -> impl IntoResponse {
 }
 
 pub async fn ical_handler(Path(tzp): Path<TimezonePair>) -> impl IntoResponse {
-    let year = Zoned::now().year();
+    let year = ZonedDateTime::now().year();
 
     let mut d = Vec::new();
     for y in year - 1..year + 3 {
@@ -46,7 +46,7 @@ pub async fn ical_handler(Path(tzp): Path<TimezonePair>) -> impl IntoResponse {
 }
 
 pub async fn json_handler(Path(tzp): Path<TimezonePair>) -> impl IntoResponse {
-    let year = Zoned::now().year();
+    let year = ZonedDateTime::now().year();
 
     let mut d = Vec::new();
     for y in year - 1..year + 3 {

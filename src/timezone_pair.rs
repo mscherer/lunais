@@ -57,7 +57,7 @@ impl TimezonePair {
         // (unless exceptions, looking at you Australia/Lord_howe)
         let mut dt_1 = date(year, 1, 1)
             .at(3, 0, 0, 0)
-            .to_zoned(self.tzs[0].clone())
+            .to_zoned_datetime(self.tzs[0].clone())
             .unwrap();
         let mut dt_2 = dt_1.with_time_zone(self.tzs[1].clone());
         // assume that DST is at least 1h, even if this not always true:
